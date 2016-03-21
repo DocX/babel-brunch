@@ -12,12 +12,12 @@ class BabelCompiler {
     const options = config.plugins &&
       (config.plugins.babel || config.plugins.ES6to5) || {};
     const opts = Object.keys(options).reduce((obj, key) => {
-      if (key !== 'sourceMap' && key !== 'ignore') {
+      if (key !== 'sourceMaps' && key !== 'ignore') {
         obj[key] = options[key];
       }
       return obj;
     }, {});
-    opts.sourceMap = !!config.sourceMaps;
+    opts.sourceMaps = !!config.sourceMaps;
     if (opts.pattern) {
       this.pattern = opts.pattern;
       delete opts.pattern;
@@ -31,7 +31,13 @@ class BabelCompiler {
 
   compile(params) {
     if (this.isIgnored(params.path)) return Promise.resolve(params);
+
     this.options.filename = params.path;
+    // set source target to the full file path
+    this.options.sourceMapTarget = params.path;
+    this.options.sourceFileName = params.path;
+    // set input source maps if present from previous plugins
+    this.options.inputSourceMap = params.map;
 
     return new Promise((resolve, reject) => {
       let compiled;
@@ -44,7 +50,9 @@ class BabelCompiler {
 
       // Concatenation is broken by trailing comments in files, which occur
       // frequently when comment nodes are lost in the AST from babel.
-      result.data += '\n';
+      // DocX update: do not add it as it can mess with source maps. concatenation works in brunch
+      // as it is done after wrapping
+      //result.data += '\n';
 
       if (compiled.map) result.map = JSON.stringify(compiled.map);
       resolve(result);
