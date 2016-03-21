@@ -37,7 +37,7 @@ class BabelCompiler {
     this.options.sourceMapTarget = params.path;
     this.options.sourceFileName = params.path;
     // set input source maps if present from previous plugins
-    this.options.inputSourceMap = JSON.parse(params.map);
+    this.options.inputSourceMap = params.map && JSON.parse(params.map);
 
     return new Promise((resolve, reject) => {
       let compiled;
